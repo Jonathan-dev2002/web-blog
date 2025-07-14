@@ -1,0 +1,132 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
+  firstName   String?
+  lastName    String?
+  password    String
+  role        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// โมเดลสำหรับผู้ใช้
+model User {
+  //id          Int       @id @default(autoincrement())
+  id          String @id @default(cuid()) // ID หลัก ใช้ CUID เพื่อความ unique
+  email       String @unique
+  username    String @unique
+  firstName   String?
+  lastName    String?
+  password    String
+  displayName String?
+  photoURL    String?
+  bio         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  posts       Post[]
+  comments    Comment[]
+  likes       Like[]
+
+  following   Follows[] @relation("Following") // รายชื่อคนที่ User คนนี้ไปติดตาม
+  followers   Follows[] @relation("Followers") // รายชื่อคนที่มาติดตาม User คนนี้
+
+  sentMessages  Message[] // ข้อความที่ผู้ใช้คนนี้ส่ง
+  chats         ChatParticipant[] // ห้องแชทที่ผู้ใช้คนนี้เข้าร่วม
+}
+
+model Post {
+  id          String @id @default(cuid())
+  content     String
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorId    String
+  author      User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  comments    Comment[] // คอมเมนต์ทั้งหมดในโพสต์นี้
+  likes       Like[] // ไลค์ทั้งหมดในโพสต์นี้
+}
+
+model Comment {
+  id          String @id @default(cuid())
+  text        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorId    String
+  author      User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  postId      String
+  post        Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  userId      String
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  postId      String
+  post        Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@id([userId, postId])
+}
+
+model Follows {
+  // ความสัมพันธ์
+  followerId  String
+  follower    User @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+
+  followingId String
+  following   User @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@id([followerId, followingId])
+}
+
+
+model Chat {
+  id          String @id @default(cuid())
+  name        String? // ชื่อห้องแชท (สำหรับแชทกลุ่ม)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  participants ChatParticipant[]
+  messages    Message[]
+}
+
+model ChatParticipant {
+  userId      String
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  chatId      String
+  chat        Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  joinedAt    DateTime @default(now())
+
+  @@id([userId, chatId])
+}
+
+model Message {
+  id          String @id @default(cuid())
+  text        String
+  createdAt   DateTime @default(now())
+
+  senderId    String
+  sender      User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  chatId      String
+  chat        Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+}

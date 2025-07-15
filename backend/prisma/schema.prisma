@@ -7,21 +7,15 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id          Int       @id @default(autoincrement())
-  email       String    @unique
-  firstName   String?
-  lastName    String?
-  password    String
-  role        String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+enum Role {
+  USER     
+  ADMIN    
 }
 
-// โมเดลสำหรับผู้ใช้
+
 model User {
   //id          Int       @id @default(autoincrement())
-  id          String @id @default(cuid()) // ID หลัก ใช้ CUID เพื่อความ unique
+  id          String @id @default(cuid())
   email       String @unique
   username    String @unique
   firstName   String?
@@ -30,6 +24,7 @@ model User {
   displayName String?
   photoURL    String?
   bio         String?
+  role        Role      @default(USER)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -37,11 +32,11 @@ model User {
   comments    Comment[]
   likes       Like[]
 
-  following   Follows[] @relation("Following") // รายชื่อคนที่ User คนนี้ไปติดตาม
-  followers   Follows[] @relation("Followers") // รายชื่อคนที่มาติดตาม User คนนี้
+  following   Follows[] @relation("Following")
+  followers   Follows[] @relation("Followers")
 
-  sentMessages  Message[] // ข้อความที่ผู้ใช้คนนี้ส่ง
-  chats         ChatParticipant[] // ห้องแชทที่ผู้ใช้คนนี้เข้าร่วม
+  sentMessages  Message[]
+  chats         ChatParticipant[]
 }
 
 model Post {
@@ -54,8 +49,8 @@ model Post {
   authorId    String
   author      User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  comments    Comment[] // คอมเมนต์ทั้งหมดในโพสต์นี้
-  likes       Like[] // ไลค์ทั้งหมดในโพสต์นี้
+  comments    Comment[]
+  likes       Like[]
 }
 
 model Comment {
@@ -84,7 +79,6 @@ model Like {
 }
 
 model Follows {
-  // ความสัมพันธ์
   followerId  String
   follower    User @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
 
@@ -99,7 +93,7 @@ model Follows {
 
 model Chat {
   id          String @id @default(cuid())
-  name        String? // ชื่อห้องแชท (สำหรับแชทกลุ่ม)
+  name        String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

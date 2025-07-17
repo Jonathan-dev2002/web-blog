@@ -9,4 +9,13 @@ const loginSchema = z.object({
   path: ["email", "username"], // ระบุว่า error นี้เกี่ยวกับ field ไหน
 });
 
-module.exports = { loginSchema };
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(6, "New password must be at least 6 characters"),
+  confirmNewPassword: z.string().min(6, "Password confirmation is required"),
+}).refine((data) => data.newPassword === data.confirmNewPassword, {
+  // ตรวจสอบว่ารหัสผ่านใหม่กับที่ยืนยันตรงกันหรือไม่
+  message: "New password and confirmation do not match",
+  path: ["confirmNewPassword"],
+});
+module.exports = { loginSchema ,changePasswordSchema};

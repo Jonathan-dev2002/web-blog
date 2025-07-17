@@ -37,6 +37,11 @@ const getAllUsers = async () => {
 
 const getUserById = async (id) => {
   const users = await prisma.user.findUnique({ where: { id } })
+
+  if (!user) {
+    return null;
+  }
+
   delete users.password
   return users
 }
@@ -68,8 +73,31 @@ const createUser = async (data) => {
 }
 
 const updateUser = async (id, data) => {
-  return await prisma.user.update({ where: { id } ,data})
+  return await prisma.user.update({ where: { id }, data })
 }
+
+const updatePassword = async (userId, currentPassword, newPassword) => {
+  const userWithPassword = await prisma.user.findUnique({ where: { id: userId } });
+
+  if (!userWithPassword) {
+    return { success: false, error: 'USER_NOT_FOUND' };
+  }
+
+  const isPasswordCorrect = await bcrypt.compare(currentPassword, userWithPassword.password);
+
+  if (!isPasswordCorrect) {
+    return { success: false, error: 'INCORRECT_PASSWORD' };
+  }
+
+  const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedNewPassword },
+  });
+
+  return { success: true };
+};
 
 module.exports = {
   getAllUsers,
@@ -79,4 +107,5 @@ module.exports = {
   getUserByUsername,
   comparePassword,
   updateUser,
+  updatePassword
 };

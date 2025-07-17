@@ -3,7 +3,7 @@ const userService = require("../services/user.service")
 const validateZod = require("../validations/validateZod")
 const Boom = require('@hapi/boom');
 
-const { loginSchema } = require("../validations/auth.validation")
+const { loginSchema , changePasswordSchema } = require("../validations/auth.validation")
 
 const login = {
     description: "User login and get JWT token",
@@ -50,4 +50,40 @@ const login = {
     }
 }
 
-module.exports = { login };
+const changePassword = {
+    description: "Change the current user's password",
+    tags: ["api", "auth"],
+    validate: {
+        payload: validateZod(changePasswordSchema),
+    },
+    handler: async (request, h) => {
+        try {
+            const userId = request.auth.credentials.sub; 
+            const { currentPassword, newPassword } = request.payload;
+
+            const result = await userService.updatePassword(
+                userId,
+                currentPassword,
+                newPassword
+            );
+
+            if (!result.success) {
+                if (result.error === 'INCORRECT_PASSWORD') {
+                    throw Boom.unauthorized('Incorrect current password.');
+                }
+                throw Boom.badImplementation('Could not update password.');
+            }
+
+            return h.response({ message: "Password changed successfully" }).code(200);
+
+        } catch (error) {
+            console.error("Error changing password:", error);
+            if (error.isBoom) {
+                throw error;
+            }
+            throw Boom.internal("An unexpected error occurred while changing the password.");
+        }
+    }
+};
+
+module.exports = { login , changePassword};

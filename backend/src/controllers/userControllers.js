@@ -1,7 +1,7 @@
 const userService = require("../services/user.service")
 const validateZod = require("../validations/validateZod")
 const Boom = require('@hapi/boom');
-const { idParamSchema, createUserSchema, updateUserSchema } = require('../validations/user.validation')
+const { idParamSchema, createUserSchema, updateUserSchema, updateUserStatusSchema } = require('../validations/user.validation')
 
 const getAllUsers = {
     description: "Get list of all users",
@@ -158,6 +158,34 @@ const deleteUser = {
     }
 }
 
+const setUserStatus = {
+    description: "Activate or Deactivate a user account",
+    tags: ["api", "user", "admin"],
+    auth: false,
+    validate: {
+        params: validateZod(idParamSchema),
+        payload: validateZod(updateUserStatusSchema),
+    },
+    handler: async (req, h) => {
+        const { id } = req.params;
+        const { isActive } = req.payload;
+
+        try {
+            const updatedUser = await userService.setUserStatus(id, isActive);
+            return h.response(updatedUser).code(200);
+
+        } catch (error) {
+            console.error(`Error setting user status for ID ${id}:`, error);
+
+            if (error.code === 'P2025') {
+                throw Boom.notFound("User with the specified ID was not found.");
+            }
+
+            throw Boom.internal("An unexpected error occurred while updating user status.");
+        }
+    }
+};
+
 module.exports = {
     getAllUsers,
     getUserById,
@@ -165,4 +193,5 @@ module.exports = {
     updateUser,
     updateUserProfile,
     deleteUser,
+    setUserStatus,
 };

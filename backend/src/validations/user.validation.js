@@ -28,8 +28,16 @@ const updateUserSchema = z.object({
   role: z.nativeEnum(Role).optional()
 })
 
+const updateUserStatusSchema = z.object({
+  isActive: z.boolean({
+    required_error: "isActive field is required",
+    invalid_type_error: "isActive must be a boolean",
+  }),
+});
+
 module.exports = {
     idParamSchema,
     createUserSchema,
     updateUserSchema,
+    updateUserStatusSchema,
 }

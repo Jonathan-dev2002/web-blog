@@ -3,7 +3,7 @@ const userService = require("../services/user.service")
 const validateZod = require("../validations/validateZod")
 const Boom = require('@hapi/boom');
 
-const { loginSchema , changePasswordSchema } = require("../validations/auth.validation")
+const { loginSchema, changePasswordSchema } = require("../validations/auth.validation")
 
 const login = {
     description: "User login and get JWT token",
@@ -22,6 +22,10 @@ const login = {
             }
             else if (username) {
                 user = await userService.getUserByUsername(username);
+            }
+
+            if (user && !user.isActive) {
+                throw Boom.unauthorized("Your account has been deactivated.");
             }
 
             const passwordIsValid = user ? await userService.comparePassword(user, password) : false;
@@ -58,7 +62,7 @@ const changePassword = {
     },
     handler: async (request, h) => {
         try {
-            const userId = request.auth.credentials.sub; 
+            const userId = request.auth.credentials.sub;
             const { currentPassword, newPassword } = request.payload;
 
             const result = await userService.updatePassword(
@@ -86,4 +90,4 @@ const changePassword = {
     }
 };
 
-module.exports = { login , changePassword};
+module.exports = { login, changePassword };

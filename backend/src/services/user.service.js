@@ -16,7 +16,11 @@ const comparePassword = async (user, plainPassword) => {
 };
 
 const getAllUsers = async () => {
-  const users = await prisma.user.findMany()
+  const users = await prisma.user.findMany({
+    where: {
+      isActive: true
+    }
+  })
 
   // หรือจะสร้าง object ใหม่แบบนี้ก็ได้ (ปลอดภัยกว่า)
   /*
@@ -106,9 +110,19 @@ const updateUserProfie =async(id,data)=>{
 const deleteUser = async(id)=>{
   const deleteUser = await prisma.user.delete({where:{id}})
   const {password, ...safeDeleteUsered} = deleteUser
-  
+
   return safeDeleteUsered
 }
+
+const setUserStatus = async (id, isActive) => {
+  const updatedUser = await prisma.user.update({
+    where: { id },
+    data: { isActive: isActive },
+  });
+
+  const { password, ...safeUser } = updatedUser;
+  return safeUser;
+};
 
 module.exports = {
   getAllUsers,
@@ -120,5 +134,6 @@ module.exports = {
   updateUser,
   updatePassword,
   updateUserProfie,
-  deleteUser
+  deleteUser,
+  setUserStatus
 };

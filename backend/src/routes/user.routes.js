@@ -30,5 +30,10 @@ module.exports = [
         method: "DELETE",
         path: "/users/{id}",
         options:userController.deleteUser
+    },
+    {
+        method: "PATCH",
+        path: "/users/{id}/status",
+        options: userController.setUserStatus
     }
 ]

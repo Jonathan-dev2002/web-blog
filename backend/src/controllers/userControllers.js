@@ -103,9 +103,38 @@ const updateUser = {
     }
 }
 
+const updateUserProfile = {
+    description: "Update User By Id",
+    tags: ["api", "user"],
+    validate: {
+        payload: validateZod(updateUserSchema),
+    },
+    handler: async (req, h) => {
+        const id = req.auth.credentials.sub
+        try {
+            const update = await userService.updateUserProfie(id, req.payload)
+            return h.response(update).code(200)
+        } catch (error) {
+            console.error("Error updating user:", error);
+
+            if (error.code === 'P2025') {
+                throw Boom.notFound("User with the specified ID was not found.");
+            }
+
+            if (error.code === 'P2002') {
+                const field = error.meta.target[0];
+                throw Boom.conflict(`The ${field} is already taken by another user.`);
+            }
+
+            throw Boom.internal("An unexpected error occurred while updating the user.");
+        }
+    }
+}
+
 module.exports = {
     getAllUsers,
     getUserById,
     createUser,
     updateUser,
+    updateUserProfile
 };

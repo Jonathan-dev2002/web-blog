@@ -99,6 +99,10 @@ const updatePassword = async (userId, currentPassword, newPassword) => {
   return { success: true };
 };
 
+const updateUserProfie =async(id,data)=>{
+  return await prisma.user.update({where:{id} , data})
+}
+
 module.exports = {
   getAllUsers,
   getUserById,
@@ -107,5 +111,6 @@ module.exports = {
   getUserByUsername,
   comparePassword,
   updateUser,
-  updatePassword
+  updatePassword,
+  updateUserProfie 
 };

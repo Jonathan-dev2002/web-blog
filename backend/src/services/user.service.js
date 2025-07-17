@@ -3,12 +3,12 @@ const prisma = require("../utils/prisma");
 const bcrypt = require("bcrypt");
 const SALT_ROUNDS = 10;
 
-const getUserByEmail = async(email)=>{
-  return await prisma.user.findUnique({where: {email}})
+const getUserByEmail = async (email) => {
+  return await prisma.user.findUnique({ where: { email } })
 }
 
-const getUserByUsername = async(username)=>{
-  return await prisma.user.findUnique({where:{username}})
+const getUserByUsername = async (username) => {
+  return await prisma.user.findUnique({ where: { username } })
 }
 
 const comparePassword = async (user, plainPassword) => {
@@ -17,7 +17,7 @@ const comparePassword = async (user, plainPassword) => {
 
 const getAllUsers = async () => {
   const users = await prisma.user.findMany()
-  
+
   // หรือจะสร้าง object ใหม่แบบนี้ก็ได้ (ปลอดภัยกว่า)
   /*
   const safeUsers = users.map(user => ({
@@ -28,20 +28,20 @@ const getAllUsers = async () => {
   }));
   */
 
-  const safeUser = users.map(user=>{
+  const safeUser = users.map(user => {
     delete user.password
     return user
   })
   return safeUser
 }
 
-const getUserById = async(id) =>{
-  const users = await prisma.user.findUnique({where:{id}})
+const getUserById = async (id) => {
+  const users = await prisma.user.findUnique({ where: { id } })
   delete users.password
   return users
 }
 
-const createUser = async(data) =>{
+const createUser = async (data) => {
 
   const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
 
@@ -56,7 +56,7 @@ const createUser = async(data) =>{
     bio: data.bio,
     role: data.role || 'USER'
   }
-  const user = await prisma.user.create({data:createData})
+  const user = await prisma.user.create({ data: createData })
 
   return {
     id: user.id,
@@ -66,11 +66,17 @@ const createUser = async(data) =>{
     lastName: user.lastName
   }
 }
+
+const updateUser = async (id, data) => {
+  return await prisma.user.update({ where: { id } ,data})
+}
+
 module.exports = {
   getAllUsers,
   getUserById,
   createUser,
   getUserByEmail,
   getUserByUsername,
-  comparePassword
+  comparePassword,
+  updateUser,
 };

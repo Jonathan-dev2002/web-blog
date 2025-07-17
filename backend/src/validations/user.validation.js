@@ -17,7 +17,19 @@ const idParamSchema = z.object({
   id: z.string().cuid({ message: "Invalid CUID format" }),
 });
 
+const updateUserSchema = z.object({
+  email: z.string().email("Invalid email format").optional(),
+  username: z.string().min(6,"username is require").optional(),
+  firstName: z.string().min(1,"firstname is require").optional(),
+  lastName: z.string().min(1,"lastname is require").optional(),
+  displayName: z.string().min(1).optional(),
+  photoURL: z.string().min(1).optional(),
+  bio: z.string().min(1).optional(),
+  role: z.nativeEnum(Role).optional()
+})
+
 module.exports = {
     idParamSchema,
     createUserSchema,
+    updateUserSchema,
 }

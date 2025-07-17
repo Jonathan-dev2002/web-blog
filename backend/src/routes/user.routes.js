@@ -16,4 +16,9 @@ module.exports = [
         path: "/users",
         options:userController.createUser
     },
+    {
+        method: "PUT",
+        path: "/users/{id}",
+        options:userController.updateUser
+    }
 ]

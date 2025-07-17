@@ -1,7 +1,7 @@
 const userService = require("../services/user.service")
 const validateZod = require("../validations/validateZod")
 const Boom = require('@hapi/boom');
-const { idParamSchema, createUserSchema,updateUserSchema } = require('../validations/user.validation')
+const { idParamSchema, createUserSchema, updateUserSchema } = require('../validations/user.validation')
 
 const getAllUsers = {
     description: "Get list of all users",
@@ -131,10 +131,38 @@ const updateUserProfile = {
     }
 }
 
+const deleteUser = {
+    description: "Delete User by id",
+    tags: ["api", "user"],
+    auth: false,
+    validate: {
+        params: validateZod(idParamSchema),
+    },
+    handler: async (req, h) => {
+        const { id } = req.params
+        try {
+            const deleteUser = await userService.deleteUser(id)
+            return h.response({
+                message: "User deleted successfully.",
+                deleteUserId: deleteUser.id
+            }).code(200);
+        } catch (error) {
+            console.error("Error deleting user:", error);
+
+            if (error.code === 'P2025') {
+                throw Boom.notFound("User with the specified ID was not found.");
+            }
+
+            throw Boom.internal("An unexpected error occurred while deleting the user.");
+        }
+    }
+}
+
 module.exports = {
     getAllUsers,
     getUserById,
     createUser,
     updateUser,
-    updateUserProfile
+    updateUserProfile,
+    deleteUser,
 };

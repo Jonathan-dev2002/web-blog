@@ -103,6 +103,13 @@ const updateUserProfie =async(id,data)=>{
   return await prisma.user.update({where:{id} , data})
 }
 
+const deleteUser = async(id)=>{
+  const deleteUser = await prisma.user.delete({where:{id}})
+  const {password, ...safeDeleteUsered} = deleteUser
+  
+  return safeDeleteUsered
+}
+
 module.exports = {
   getAllUsers,
   getUserById,
@@ -112,5 +119,6 @@ module.exports = {
   comparePassword,
   updateUser,
   updatePassword,
-  updateUserProfie 
+  updateUserProfie,
+  deleteUser
 };

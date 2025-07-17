@@ -25,5 +25,10 @@ module.exports = [
         method: "PUT",
         path: "/profile/users",
         options:userController.updateUserProfile
+    },
+    {
+        method: "DELETE",
+        path: "/users/{id}",
+        options:userController.deleteUser
     }
 ]

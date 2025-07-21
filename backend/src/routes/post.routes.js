@@ -1,4 +1,6 @@
 const postController = require("../controllers/post.Controller")
+const { requireAdmin } = require("../utils/authorization");
+
 
 module.exports = [
     {
@@ -25,5 +27,5 @@ module.exports = [
         method: "DELETE",
         path: "/post/{id}",
         options: postController.deletePost
-    }
+    },
 ]

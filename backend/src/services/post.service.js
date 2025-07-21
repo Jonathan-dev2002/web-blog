@@ -37,16 +37,36 @@ const createPost = async (authorId, postData) => {
         }
     });
 }
-const updatePost = async (id, data) => {
-    return await prisma.post.update({ where: { id }, data})
-}
-const deletePost = async (id) => {
-    return await prisma.post.delete({ where: { id } })
-}
+const updatePost = async (postId, userId, data) => {
+    return await prisma.post.update({
+        where: { id: postId, authorId: userId },
+        data
+    });
+};
+const deletePost = async (postId, userId) => {
+    return await prisma.post.delete({
+        where: { id: postId, authorId: userId }
+    });
+};
+
+const adminUpdatePost = async (postId, data) => {
+    return await prisma.post.update({
+        where: { id: postId },
+        data
+    });
+};
+
+const adminDeletePost = async (postId) => {
+    return await prisma.post.delete({
+        where: { id: postId }
+    });
+};
 module.exports = {
     getAllPosts,
     getPostById,
     createPost,
     updatePost,
-    deletePost
+    deletePost,
+    adminUpdatePost,
+    adminDeletePost
 }

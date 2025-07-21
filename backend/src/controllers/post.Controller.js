@@ -69,64 +69,70 @@ const createPost = {
     }
 }
 const updatePost = {
-    description: "update a post",
+    description: "Update a post. Allowed for the post owner or an admin.",
     tags: ["api", "post"],
     validate: {
         params: validateZod(idParamSchema),
         payload: validateZod(updatePostSchema),
-        
     },
-    auth: false,
     handler: async (req, h) => {
-        const { id } = req.params
-        const updateData = req.payload
+        const postId = req.params.id;
+        const { sub: userId, role: userRole } = req.auth.credentials;
+        const updateData = req.payload;
+
         try {
-            const data = await postService.updatePost(id, updateData)
-            return h.response(data).code(200)
+            let updatedPost;
+
+            if (userRole === 'ADMIN') {
+                updatedPost = await postService.adminUpdatePost(postId, updateData);
+            } else {
+                updatedPost = await postService.updatePost(postId, userId, updateData);
+            }
+
+            return h.response(updatedPost).code(200);
 
         } catch (error) {
             console.error("Error updating post:", error);
-
             if (error.code === 'P2025') {
-                throw Boom.notFound("Post with the specified ID was not found.");
+                throw Boom.forbidden("You are not allowed to edit this post or it does not exist.");
             }
-
-            if (error.code === 'P2002') {
-                const field = error.meta.target[0];
-                throw Boom.conflict(`The ${field} is already taken by another post.`);
-            }
-
             throw Boom.internal("An unexpected error occurred while updating the post.");
         }
     }
-}
+};
 
 const deletePost = {
-    description: "delete a post",
+    description: "Delete a post. Allowed for the post owner or an admin.",
     tags: ["api", "post"],
     validate: {
         params: validateZod(idParamSchema)
     },
-    auth: false,
     handler: async (req, h) => {
-        const { id } = req.params
+        const postId = req.params.id;
+        const { sub: userId, role: userRole } = req.auth.credentials;
+
         try {
-            const deletePost = await postService.deletePost(id)
+            let deletedPost;
+
+            if (userRole === 'ADMIN') {
+                deletedPost = await postService.adminDeletePost(postId);
+            } else {
+                deletedPost = await postService.deletePost(postId, userId);
+            }
+
             return h.response({
                 message: "Post deleted successfully.",
-                deletePostId: deletePost.id
+                deletedPostId: deletedPost.id
             }).code(200);
         } catch (error) {
             console.error("Error deleting post:", error);
-
             if (error.code === 'P2025') {
-                throw Boom.notFound("post with the specified ID was not found.");
+                throw Boom.forbidden("You are not allowed to delete this post or it does not exist.");
             }
-
             throw Boom.internal("An unexpected error occurred while deleting the post.");
         }
     }
-}
+};
 
 
 
@@ -135,5 +141,5 @@ module.exports = {
     getPostById,
     createPost,
     updatePost,
-    deletePost
+    deletePost,
 }

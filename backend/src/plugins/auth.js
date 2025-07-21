@@ -18,7 +18,12 @@ exports.authPlugin = {
           throw BoomAuth.unauthorized("Bad auth format", "Bearer");
         }
         try {
-          const credentials = verifyToken(token);
+          const decoded = verifyToken(token);
+          const credentials = {
+            sub: decoded.sub,
+            role: decoded.role,
+            scope: [decoded.role] // สร้าง scope จาก role
+          };
           return h.authenticated({
             credentials: {
               ...credentials

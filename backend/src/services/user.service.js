@@ -32,22 +32,21 @@ const getAllUsers = async () => {
   }));
   */
 
-  const safeUser = users.map(user => {
-    delete user.password
-    return user
-  })
-  return safeUser
+  return users.map(user => {
+    const { password, ...safeUser } = user;
+    return safeUser;
+  });
 }
 
 const getUserById = async (id) => {
-  const users = await prisma.user.findUnique({ where: { id } })
+  const user = await prisma.user.findUnique({ where: { id } })
 
   if (!user) {
     return null;
   }
 
-  delete users.password
-  return users
+  const { password, ...safeUser } = user;
+  return safeUser
 }
 
 const createUser = async (data) => {
@@ -67,17 +66,8 @@ const createUser = async (data) => {
   }
   const user = await prisma.user.create({ data: createData })
 
-  return {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName
-  }
-}
-
-const updateUser = async (id, data) => {
-  return await prisma.user.update({ where: { id }, data })
+  const { password, ...safeUser } = user;
+  return safeUser;
 }
 
 const updatePassword = async (userId, currentPassword, newPassword) => {
@@ -103,13 +93,13 @@ const updatePassword = async (userId, currentPassword, newPassword) => {
   return { success: true };
 };
 
-const updateUserProfie =async(id,data)=>{
-  return await prisma.user.update({where:{id} , data})
+const updateUserProfile = async (id, data) => {
+  return await prisma.user.update({ where: { id }, data })
 }
 
-const deleteUser = async(id)=>{
-  const deleteUser = await prisma.user.delete({where:{id}})
-  const {password, ...safeDeleteUsered} = deleteUser
+const deleteUser = async (id) => {
+  const deleteUser = await prisma.user.delete({ where: { id } })
+  const { password, ...safeDeleteUsered } = deleteUser
 
   return safeDeleteUsered
 }
@@ -131,9 +121,8 @@ module.exports = {
   getUserByEmail,
   getUserByUsername,
   comparePassword,
-  updateUser,
   updatePassword,
-  updateUserProfie,
   deleteUser,
-  setUserStatus
+  setUserStatus,
+  updateUserProfile,
 };

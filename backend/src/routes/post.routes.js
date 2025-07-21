@@ -1,6 +1,4 @@
 const postController = require("../controllers/post.Controller")
-const { requireAdmin } = require("../utils/authorization");
-
 
 module.exports = [
     {
@@ -10,22 +8,22 @@ module.exports = [
     },
     {
         method: "GET",
-        path: "/post/{id}",
+        path: "/posts/{id}",
         options: postController.getPostById
     },
     {
         method: "POST",
-        path: "/post",
+        path: "/posts",
         options: postController.createPost
     },
     {
         method: "PUT",
-        path: "/post/{id}",
+        path: "/posts/{id}",
         options: postController.updatePost
     },
     {
         method: "DELETE",
-        path: "/post/{id}",
+        path: "/posts/{id}",
         options: postController.deletePost
     },
-]
+];

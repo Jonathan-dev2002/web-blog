@@ -1,11 +1,29 @@
 const userController = require("../controllers/user.Controller")
 
 module.exports = [
+    // --- Admin Routes ---
     {
         method: "GET",
-        path: "/users",
+        path: "/admin/users",
         options: userController.getAllUsers
     },
+    {
+        method: "PUT",
+        path: "/admin/users/{id}",
+        options: userController.adminUpdateUser
+    },
+    {
+        method: "DELETE",
+        path: "/admin/users/{id}",
+        options: userController.adminDeleteUser
+    },
+    {
+        method: "PATCH",
+        path: "/admin/users/{id}/status",
+        options: userController.setUserStatus
+    },
+
+    // --- Public/User Routes ---
     {
         method: "GET",
         path: "/users/{id}",
@@ -14,26 +32,11 @@ module.exports = [
     {
         method: "POST",
         path: "/users",
-        options:userController.createUser
+        options: userController.createUser
     },
     {
         method: "PUT",
-        path: "/users/{id}",
-        options:userController.updateUser
+        path: "/users/me",
+        options: userController.updateCurrentUserProfile
     },
-    {
-        method: "PUT",
-        path: "/profile/users",
-        options:userController.updateUserProfile
-    },
-    {
-        method: "DELETE",
-        path: "/users/{id}",
-        options:userController.deleteUser
-    },
-    {
-        method: "PATCH",
-        path: "/users/{id}/status",
-        options: userController.setUserStatus
-    }
-]
+];

@@ -5,7 +5,8 @@ const { idParamSchema, createUserSchema, updateUserSchema, updateUserStatusSchem
 
 const getAllUsers = {
     description: "Get list of all users",
-    tags: ["api", "user"],
+    tags: ["api", "user", "ADMIN"],
+    auth: { scope: ['ADMIN'] },
     auth: false,
     handler: async (req, h) => {
         try {
@@ -73,19 +74,47 @@ const createUser = {
         }
     }
 }
-const updateUser = {
-    description: "Update User By Id",
-    tags: ["api", "user"],
-    auth: false,
+const updateCurrentUserProfile = {
+    description: "Update the currently logged-in user's profile",
+    tags: ["api", "user", "profile"],
+    validate: {
+        payload: validateZod(updateUserSchema),
+    },
+    handler: async (req, h) => {
+        const userId = req.auth.credentials.sub
+        try {
+            const updatedUser = await userService.updateUserProfile(userId, req.payload);
+            return h.response(updatedUser).code(200);
+        } catch (error) {
+            console.error("Error updating user:", error);
+
+            if (error.code === 'P2025') {
+                throw Boom.notFound("User with the specified ID was not found.");
+            }
+
+            if (error.code === 'P2002') {
+                const field = error.meta.target[0];
+                throw Boom.conflict(`The ${field} is already taken by another user.`);
+            }
+
+            throw Boom.internal("An unexpected error occurred while updating the user.");
+        }
+    }
+}
+
+const adminUpdateUser = {
+    description: "Update any user by ID (Admin only)",
+    tags: ["api", "user", "admin"],
+    auth: { scope: ['ADMIN'] },
     validate: {
         params: validateZod(idParamSchema),
         payload: validateZod(updateUserSchema),
     },
     handler: async (req, h) => {
-        const { id } = req.params
+        const { id } = req.params;
         try {
-            const update = await userService.updateUser(id, req.payload)
-            return h.response(update).code(200)
+            const updatedUser = await userService.updateUserProfile(id, req.payload);
+            return h.response(updatedUser).code(200);
         } catch (error) {
             console.error("Error updating user:", error);
 
@@ -103,38 +132,10 @@ const updateUser = {
     }
 }
 
-const updateUserProfile = {
-    description: "Update User By Id",
-    tags: ["api", "user"],
-    validate: {
-        payload: validateZod(updateUserSchema),
-    },
-    handler: async (req, h) => {
-        const id = req.auth.credentials.sub
-        try {
-            const update = await userService.updateUserProfie(id, req.payload)
-            return h.response(update).code(200)
-        } catch (error) {
-            console.error("Error updating user:", error);
-
-            if (error.code === 'P2025') {
-                throw Boom.notFound("User with the specified ID was not found.");
-            }
-
-            if (error.code === 'P2002') {
-                const field = error.meta.target[0];
-                throw Boom.conflict(`The ${field} is already taken by another user.`);
-            }
-
-            throw Boom.internal("An unexpected error occurred while updating the user.");
-        }
-    }
-}
-
-const deleteUser = {
-    description: "Delete User by id",
-    tags: ["api", "user"],
-    auth: false,
+const adminDeleteUser = {
+    description: "Delete a user by ID (Admin only)",
+    tags: ["api", "user", "admin"],
+    auth: { scope: ['ADMIN'] },
     validate: {
         params: validateZod(idParamSchema),
     },
@@ -159,9 +160,9 @@ const deleteUser = {
 }
 
 const setUserStatus = {
-    description: "Activate or Deactivate a user account",
+    description: "Activate or Deactivate a user account (Admin only)",
     tags: ["api", "user", "admin"],
-    auth: false,
+    auth: { scope: ['ADMIN'] },
     validate: {
         params: validateZod(idParamSchema),
         payload: validateZod(updateUserStatusSchema),
@@ -190,8 +191,8 @@ module.exports = {
     getAllUsers,
     getUserById,
     createUser,
-    updateUser,
-    updateUserProfile,
-    deleteUser,
+    adminDeleteUser,
     setUserStatus,
+    updateCurrentUserProfile,
+    adminUpdateUser
 };

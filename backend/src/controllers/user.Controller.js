@@ -7,7 +7,6 @@ const getAllUsers = {
     description: "Get list of all users",
     tags: ["api", "user", "ADMIN"],
     auth: { scope: ['ADMIN'] },
-    auth: false,
     handler: async (req, h) => {
         try {
             const user = await userService.getAllUsers()
